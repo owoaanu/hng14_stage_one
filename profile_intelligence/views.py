@@ -16,7 +16,6 @@ NATIONALIZE_URL = "https://api.nationalize.io"
 
 
 def call_genderize(name):
-    """Calls the Genderize API and returns relevant data or None."""
     try:
         response = requests.get(f"{GENDERIZE_URL}?name={name}")
         response.raise_for_status()  # Raise an exception for bad status codes
@@ -34,7 +33,6 @@ def call_genderize(name):
 
 
 def call_agify(name):
-    """Calls the Agify API and returns relevant data or None."""
     try:
         response = requests.get(f"{AGIFY_URL}?name={name}")
         response.raise_for_status()
@@ -48,7 +46,6 @@ def call_agify(name):
 
 
 def call_nationalize(name):
-    """Calls the Nationalize API and returns relevant data or None."""
     try:
         response = requests.get(f"{NATIONALIZE_URL}?name={name}")
         response.raise_for_status()
@@ -92,10 +89,10 @@ def classify_age_group(age):
 class ProfileViewSet(ModelViewSet):
     queryset = Profile.objects.all()
     serializer_class = ProfileSerializer
-    lookup_field = "id"  # Use 'id' for URL parameters like /api/profiles/{id}
+    lookup_field = "id" 
     filter_backends = [SearchFilter, OrderingFilter]
-    search_fields = ('name', 'gender', 'country_id', 'age_group') # Fields for search
-    ordering_fields = ('created_at', 'name', 'age', 'gender') # Fields for ordering
+    search_fields = ('name', 'gender', 'country_id', 'age_group') 
+    ordering_fields = ('created_at', 'name', 'age', 'gender')
 
     def get_queryset(self):
         # Apply filtering based on query parameters
@@ -105,13 +102,13 @@ class ProfileViewSet(ModelViewSet):
         age_group = self.request.query_params.get("age_group")
 
         if gender:
-            queryset = queryset.filter(gender__iexact=gender)  # Case-insensitive
+            queryset = queryset.filter(gender__iexact=gender)
         if country_id:
             queryset = queryset.filter(
                 country_id__iexact=country_id
-            )  # Case-insensitive
+            ) 
         if age_group:
-            queryset = queryset.filter(age_group__iexact=age_group)  # Case-insensitive
+            queryset = queryset.filter(age_group__iexact=age_group) 
 
         return queryset
 
@@ -122,9 +119,8 @@ class ProfileViewSet(ModelViewSet):
                 {"status": "error", "message": "Name is required"}, status=400
             )
 
-        name = name.strip()  # Clean up whitespace
+        name = name.strip()
 
-        # Idempotency check: Look for existing profile
         try:
             existing_profile = Profile.objects.get(name__iexact=name)
             serializer = self.get_serializer(existing_profile)
@@ -137,14 +133,13 @@ class ProfileViewSet(ModelViewSet):
                 status=200,
             )
         except Profile.DoesNotExist:
-            pass  # Proceed to create a new profile
+            pass  
 
         # Call external APIs
         gender_data = call_genderize(name)
         age_data = call_agify(name)
         country_data = call_nationalize(name)
 
-        # Edge Case Handling: Check for invalid responses from APIs
         if gender_data is None or age_data is None or country_data is None:
             error_message = ""
             if gender_data is None:
@@ -159,11 +154,9 @@ class ProfileViewSet(ModelViewSet):
                 status=status.HTTP_502_BAD_GATEWAY,
             )
 
-        # Process data
         age = age_data.get("age")
         age_group = classify_age_group(age)
 
-        # Create and save the profile
         profile_data = {
             "name": name,
             "gender": gender_data.get("gender"),
@@ -202,7 +195,6 @@ class ProfileViewSet(ModelViewSet):
         return Response(response_data, status=200)
 
     def list(self, request, *args, **kwargs):
-        # This will use the filtered queryset from get_queryset
         queryset = self.filter_queryset(self.get_queryset())
         # queryset = self.filter_queryset(self.queryset)
         
@@ -214,7 +206,6 @@ class ProfileViewSet(ModelViewSet):
 
         serializer = self.get_serializer(queryset, many=True)
 
-        # Construct response to match example for list endpoint
         response_data = {
             "status": "success",
             "count": len(serializer.data),
