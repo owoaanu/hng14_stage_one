@@ -50,7 +50,7 @@ The Profile Intelligence API automatically enriches profile data by querying mul
 
 1. **Clone the repository:**
    ```bash
-   git clone <repo-url>
+   git clone https://github.com/owoaanu/hng14_stage_one.git
    cd hng14_stage_one
    ```
 
@@ -270,24 +270,6 @@ The API returns consistent JSON error responses:
 
 ---
 
-## Development
-
-### Running Tests
-
-```bash
-python manage.py test profile_intelligence
-```
-
-### Django Admin
-
-Access the admin panel at `/admin/` to manage profiles manually.
-
-```bash
-python manage.py createsuperuser
-```
-
----
-
 ## External Dependencies
 
 | Service | Purpose |
@@ -326,9 +308,3 @@ curl "http://localhost:8000/api/profiles/?search=US"
 ## License
 
 This project is part of the HNG Internship Stage One task.
-
----
-
-## Author
-
-Built with ⚡ by Sammy's AI assistant, Johnny
